@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 // Semantic text embeddings using Transformers.js via Web Worker (primary)
 // If the worker fails on GitHub Pages due to importScripts/path issues,
 // we fall back to a main-thread Transformers.js pipeline (secondary),
@@ -6,13 +7,11 @@
 // Web Worker ensures model loading doesn't block the UI thread
 
 // Singleton pattern for the worker - initialize once and reuse
+import { env, pipeline } from '@xenova/transformers';
 let worker = null;
 let workerReady = false;
 let useFallback = false;
 let initPromise = null;
-
-// Secondary fallback: main-thread transformers pipeline
-import { env, pipeline } from '@xenova/transformers';
 let extractor = null;
 let extractorInit = null;
 
