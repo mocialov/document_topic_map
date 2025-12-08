@@ -28,6 +28,12 @@ env.remotePathTemplate = '{model}/resolve/{revision}/';
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;
 
+// Force ONNX Runtime to load WASM and worker from a CDN with absolute URLs
+// This avoids webpack-bundled relative paths and the doubled `static/js` issue
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/';
+env.backends.onnx.wasm.wasmFile = 'ort-wasm.wasm';
+env.backends.onnx.wasm.workerFile = 'ort-wasm-worker.min.js';
+
 // Handle messages from main thread
 self.onmessage = async (event) => {
   const { type, data } = event.data;
