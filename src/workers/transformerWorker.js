@@ -27,6 +27,8 @@ env.remotePathTemplate = '{model}/resolve/{revision}/';
 // Single-threaded ONNX avoids this by not needing to load additional workers
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;
+// Disable SIMD to avoid cross-origin isolation requirements on GitHub Pages
+env.backends.onnx.wasm.simd = false;
 
 // Force ONNX Runtime to load WASM and worker from a CDN with absolute URLs
 // This avoids webpack-bundled relative paths and the doubled `static/js` issue

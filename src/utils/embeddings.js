@@ -26,6 +26,7 @@ function configureTransformersEnv() {
     if (env.backends?.onnx?.wasm) {
       env.backends.onnx.wasm.numThreads = 1;
       env.backends.onnx.wasm.proxy = false;
+      env.backends.onnx.wasm.simd = false;
       env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/';
       env.backends.onnx.wasm.wasmFile = 'ort-wasm.wasm';
       env.backends.onnx.wasm.workerFile = 'ort-wasm-worker.min.js';
