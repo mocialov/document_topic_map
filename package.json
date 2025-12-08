@@ -4,26 +4,31 @@
   "description": "Interactive conference topic visualization - 100% client-side React application",
   "private": true,
   "scripts": {
+    "prestart": "npm run fetch:model",
     "start": "react-scripts start",
+    "prebuild": "npm run fetch:model",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "fetch:model": "npx @xenova/transformers download Xenova/all-MiniLM-L6-v2 --target public/models",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
     "@xenova/transformers": "^2.10.0",
-    "umap-js": "^1.4.0",
     "ml-kmeans": "^6.0.0",
     "plotly.js": "^2.27.0",
-    "react-plotly.js": "^2.6.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-plotly.js": "^2.6.0",
+    "react-scripts": "5.0.1",
+    "umap-js": "^1.4.0"
   },
   "eslintConfig": {
     "extends": [
       "react-app"
     ]
   },
+  "homepage": ".",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -35,5 +40,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^3.0.5",
+    "gh-pages": "^6.0.0"
   }
 }
