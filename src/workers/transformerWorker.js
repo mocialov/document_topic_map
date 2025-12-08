@@ -19,6 +19,11 @@ env.useBrowserCache = true;
 env.remoteHost = 'https://huggingface.co';
 env.remotePathTemplate = '{model}/resolve/{revision}/';
 
+// Fix ONNX Runtime path issues in production builds
+// ONNX Runtime tries to load worker scripts, and the paths get doubled in production
+// We need to use the CDN version to avoid path resolution issues
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
+
 // Handle messages from main thread
 self.onmessage = async (event) => {
   const { type, data } = event.data;
