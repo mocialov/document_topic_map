@@ -2,14 +2,12 @@
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Methods: GET, POST, OPTIONS
   Access-Control-Allow-Headers: *
-  Cross-Origin-Embedder-Policy: require-corp
+  # Use credentialless to allow cross-origin CDN resources (jsdelivr/huggingface)
+  Cross-Origin-Embedder-Policy: credentialless
   Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: cross-origin
 
 /*.js
   Content-Type: application/javascript
-  Cross-Origin-Resource-Policy: cross-origin
 
 /*.wasm
   Content-Type: application/wasm
-  Cross-Origin-Resource-Policy: cross-origin

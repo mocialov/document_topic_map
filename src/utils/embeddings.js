@@ -67,6 +67,11 @@ async function initWorker() {
       
       worker.onerror = (error) => {
         console.error('Worker error:', error);
+        try {
+          console.error('Worker filename:', error.filename);
+          console.error('Worker lineno:', error.lineno, 'colno:', error.colno);
+          console.error('Worker message:', error.message);
+        } catch {}
         console.warn('⚠️ Falling back to TF-IDF embeddings...');
         useFallback = true;
         workerReady = false;
