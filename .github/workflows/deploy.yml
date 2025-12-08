@@ -30,7 +30,7 @@ jobs:
         run: mkdir -p public/models
 
       - name: Fetch model assets
-        run: npx --yes @xenova/transformers download Xenova/all-MiniLM-L6-v2 --target public/models
+        run: node ./node_modules/@xenova/transformers/dist/cli.js download Xenova/all-MiniLM-L6-v2 --target public/models
 
       - name: Build
         run: npm run build

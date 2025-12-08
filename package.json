@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "http-proxy-middleware": "^3.0.5",
-    "gh-pages": "^6.0.0"
+    "gh-pages": "^6.0.0",
+    "@xenova/transformers": "^2.10.0"
   }
 }
