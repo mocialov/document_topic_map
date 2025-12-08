@@ -26,7 +26,7 @@
       "react-app"
     ]
   },
-  "homepage": ".",
+  "homepage": "https://mocialov.github.io/document_topic_map",
   "browserslist": {
     "production": [
       ">0.2%",
