@@ -2,6 +2,11 @@
 // Web Worker for Transformers.js
 // Runs model loading and inference off the main thread to prevent UI blocking
 
+// CRITICAL FIX: Set webpack public path to prevent doubled path issues
+// This must be FIRST, before any imports
+// eslint-disable-next-line no-undef
+__webpack_public_path__ = self.location.origin + '/document_topic_map/';
+
 import { env, pipeline } from '@xenova/transformers';
 
 let extractor = null;
