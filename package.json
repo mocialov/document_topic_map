@@ -1,0 +1,39 @@
+{
+  "name": "conference-map-react",
+  "version": "1.0.0",
+  "description": "Interactive conference topic visualization - 100% client-side React application",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "@xenova/transformers": "^2.10.0",
+    "umap-js": "^1.4.0",
+    "ml-kmeans": "^6.0.0",
+    "plotly.js": "^2.27.0",
+    "react-plotly.js": "^2.6.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

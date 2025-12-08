@@ -1,0 +1,61 @@
+StreamingTalker: Audio-driven 3D Facial Animation with Autoregressive Diffusion Model
+ViType: High-Fidelity Visual Text Rendering via Glyph-Aware Multimodal Diffusion
+Robust Fusion Controller: Degradation-Aware Image Fusion with Fine-Grained Language Instructions
+CATP: Contextually Adaptive Token Pruning for Efficient and Enhanced Multimodal In-Context Learning
+LENS: Learning to Segment Anything with Unified Reinforced Reasoning
+See, Rank, and Filter: Important Word-Aware Clip Filtering via Scene Understanding for Moment Retrieval and Highlight Detection
+Instance-Guided Scene Adaptation for Unsupervised Person Search
+Imagine with Layout and Sketch: Enhancing Vision-Language Retrieval with Dual-Stream Multi-Modal Query Refinement
+Localization-Anchored Instance Discrimination for Domain Adaptive Person Search
+Suit the Remedy to the Retriever: Interpretable Query Optimization with Retriever Preference Alignment for Vision-Language Retrieval
+Circuit-Think: A Multimodal Reasoning Framework for Automated Circuit-to-Netlist Translation with Trajectory-Guided Reinforcement Learning
+Copyright Infringement Detection in Text-to-Image Diffusion Models via Differential Privacy
+Neural Collapse-Informed Initialization with Perturbation Injection in Classification-based Metric Learning
+LongSplat: Online Generalizable 3D Gaussian Splatting from Long Sequence Images
+S²Teacher: Step-by-step Teacher for Sparsely Annotated Oriented Object Detection
+TIME: Temporal-Sensitive Multi-Dimensional Instruction Tuning and Robust Benchmarking for Video-LLMs
+RFI: Rectified Flow Intervention for Mitigating Object Hallucination in Large Vision-Language Models
+RS2-SAM2: Customized SAM2 for Referring Remote Sensing Image Segmentation
+VCapsBench: A Large-scale Fine-grained Benchmark for Video Caption Quality Evaluation
+Affordance-R1: Reinforcement Learning for Generalizable Affordance Reasoning in Multimodal Large Language Models
+Delving into Dynamic Scene Cue-Consistency for Robust 3D Multi-Object Tracking
+RiemanLine: Riemannian Manifold Representation of 3D Lines for Factor Graph Optimization
+Spatiotemporal-Untrammelled Mixture of Experts for Multi-Person Motion Prediction
+HTTrack: Learning to Perceive Targets via Historical Trajectories in Satellite Video Tracking
+Breaking the Passive Learning Trap: An Active Perception Strategy for Human Motion Prediction
+FoundationSLAM: Unleashing the Power of Depth Foundation Models for End-to-End Dense Visual SLAM
+SCo-Cloud: Satellite Constellation Collaboration for Cloud-Aware Onboard-Computed Imaging and Transmission
+Promptus: Can Prompt Streaming Replace Video Streaming
+Unnoticed Yet Effective: A Hybrid Physical Camouflage Framework Against DNNs and Human Perception
+Heterogeneous Uncertainty-Guided Composed Image Retrieval with Fine-Grained Probabilistic Learning
+FairGC: Fostering Individual and Group Fairness for Deep Graph Clustering
+Towards Federated Clustering: A Client-wise Private Graph Aggregation Framework
+Personalized Federated Graph-Level Clustering Network
+Federated Incomplete Multi-View Clustering with Tensorized Low-Rank Constraint
+Unified View Extraction with Low-Rankness and Smoothness Fusion for Multi-View Subspace Clustering
+DeLo: Dual Decomposed Low-Rank Experts Collaboration for Continual Missing Modality Learning
+Video Echoed in Music: Semantic, Temporal, and Rhythmic Alignment for Video-to-Music Generation
+Uncertainty-Guided View-Strength-Aware Feature Utilization for Multi-View Classification
+Attribute-guided Dynamic Prompt Learning for Graph Neural Networks
+MUG: Meta-path-aware Universal Heterogeneous Graph Pre-Training
+Breaking the Dyadic Barrier: Rethinking Fairness in Link Prediction Beyond Demographic Parity
+Can Pseudo-Label Be More Reliable? A Simple yet Effective Topology-Aware Graph Self-Training Method
+ProGMLP: A Progressive Framework for GNN-to-MLP Knowledge Distillation with Efficient Trade-offs
+From Decision Trees to Boolean Logic: A Fast and Unified SHAP Algorithm
+DeepProofLog: Efficient Proving in Deep Stochastic Logic Programs
+Generating In-Distribution Counterfactual Explanation for Graph Neural Networks
+Distribution-Based Feature Attribution for Explaining the Predictions of Any Classifier
+ArchetypeTrader: Reinforcement Learning for Selecting and Refining Learnable Strategic Archetypes in Quantitative Trading
+Test-driven Reinforcement Learning in Continuous Control
+Reward Model Evaluation via Automatically-Ranked Policy Alignment
+COVR: Collaborative Optimization of VLMs and RL Agent for Visual-Based Control
+Offline Meta-Reinforcement Learning with Flow-Based Task Inference and Adaptive Correction of Feature Overgeneralization
+Flora: Effortless Context Construction to Arbitrary Length and Scale
+QuanTaxo: A Quantum Approach to Self-Supervised Taxonomy Expansion
+Interpretable Reward Model via Sparse Autoencoder
+Schema-Guided Scene-Graph Reasoning Based on Multi-Agent Large Language Model System
+InfiGUI-G1: Advancing GUI Grounding with Adaptive Exploration Policy Optimization
+From Single to Societal: Analyzing Persona-Induced Bias in Multi-Agent Interactions
+Unsupervised Semantic Discovery via Global and Local Semantic Alignment in Multimodal Clustering
+Bonsai: Interpretable Tree-Adaptive Grounded Reasoning
+AStar: Boosting Multimodal Reasoning with Automated Structured Thinking
