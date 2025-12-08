@@ -1,4 +1,7 @@
-// Semantic text embeddings using Transformers.js via Web Worker
+// Semantic text embeddings using Transformers.js via Web Worker (primary)
+// If the worker fails on GitHub Pages due to importScripts/path issues,
+// we fall back to a main-thread Transformers.js pipeline (secondary),
+// and finally to TF-IDF (tertiary).
 // Uses a lightweight BERT-based model for high-quality semantic understanding
 // Web Worker ensures model loading doesn't block the UI thread
 
@@ -7,6 +10,47 @@ let worker = null;
 let workerReady = false;
 let useFallback = false;
 let initPromise = null;
+
+// Secondary fallback: main-thread transformers pipeline
+import { env, pipeline } from '@xenova/transformers';
+let extractor = null;
+let extractorInit = null;
+
+function configureTransformersEnv() {
+  try {
+    env.allowRemoteModels = true;
+    env.allowLocalModels = false;
+    env.useBrowserCache = true;
+    env.remoteHost = 'https://huggingface.co';
+    env.remotePathTemplate = '{model}/resolve/{revision}/';
+    // Keep ONNX single-threaded
+    if (env.backends?.onnx?.wasm) {
+      env.backends.onnx.wasm.numThreads = 1;
+      env.backends.onnx.wasm.proxy = false;
+      env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/';
+      env.backends.onnx.wasm.wasmFile = 'ort-wasm.wasm';
+      env.backends.onnx.wasm.workerFile = 'ort-wasm-worker.min.js';
+    }
+  } catch {}
+}
+
+async function initExtractor() {
+  if (extractorInit) return extractorInit;
+  extractorInit = (async () => {
+    configureTransformersEnv();
+    console.log('Initializing semantic model on main thread (worker fallback)...');
+    extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+      quantized: true,
+    });
+    console.log('✓ Semantic model ready on main thread');
+  })().catch(err => {
+    console.error('Failed to init main-thread Transformers pipeline:', err);
+    extractorInit = null;
+    extractor = null;
+    throw err;
+  });
+  return extractorInit;
+}
 
 /**
  * Initialize the Transformers.js Web Worker
@@ -72,13 +116,20 @@ async function initWorker() {
           console.error('Worker lineno:', error.lineno, 'colno:', error.colno);
           console.error('Worker message:', error.message);
         } catch {}
-        console.warn('⚠️ Falling back to TF-IDF embeddings...');
-        useFallback = true;
-        workerReady = false;
-        worker?.terminate();
-        worker = null;
-        initPromise = null;
-        resolve(); // Resolve anyway to continue with fallback
+        // Try secondary fallback: main-thread transformers
+        (async () => {
+          try {
+            await initExtractor();
+          } catch {
+            console.warn('⚠️ Falling back to TF-IDF embeddings...');
+            useFallback = true;
+          }
+          workerReady = false;
+          worker?.terminate();
+          worker = null;
+          initPromise = null;
+          resolve();
+        })();
       };
       
       // Initialize the worker
@@ -159,7 +210,18 @@ export async function generateEmbeddings(documents, onProgress) {
   
   // Use fallback if worker initialization failed
   if (useFallback || !workerReady) {
-    return generateTFIDFEmbeddings(documents, onProgress);
+    // Attempt main-thread transformers first
+    try {
+      await initExtractor();
+      console.log('Generating semantic embeddings on main thread...');
+      const output = await extractor(documents, { pooling: 'mean', normalize: true });
+      const embeddings = output.map(t => Array.from(t.data));
+      console.log(`✓ Generated ${embeddings.length} semantic embeddings (${embeddings[0].length} dimensions)`);
+      return embeddings;
+    } catch (err) {
+      console.warn('Main-thread transformers failed, using TF-IDF:', err?.message || err);
+      return generateTFIDFEmbeddings(documents, onProgress);
+    }
   }
   
   console.log('Generating semantic embeddings with Transformers.js (Web Worker)...');
