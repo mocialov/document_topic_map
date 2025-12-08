@@ -8,7 +8,6 @@
 
 // Singleton pattern for the worker - initialize once and reuse
 import { env, pipeline } from '@xenova/transformers';
-import * as tf from '@tensorflow/tfjs';
 import * as use from '@tensorflow-models/universal-sentence-encoder';
 let worker = null;
 let workerReady = false;
