@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable import/first */
 // Web Worker for Transformers.js
 // Runs model loading and inference off the main thread to prevent UI blocking
 
