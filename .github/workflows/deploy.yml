@@ -26,8 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Prepare model directory
+        run: mkdir -p public/models
+
       - name: Fetch model assets
-        run: npm run fetch:model
+        run: npx --yes @xenova/transformers download Xenova/all-MiniLM-L6-v2 --target public/models
 
       - name: Build
         run: npm run build
