@@ -8,12 +8,32 @@
 
 // Singleton pattern for the worker - initialize once and reuse
 import { env, pipeline } from '@xenova/transformers';
+import * as tf from '@tensorflow/tfjs';
+import use from '@tensorflow-models/universal-sentence-encoder';
 let worker = null;
 let workerReady = false;
 let useFallback = false;
 let initPromise = null;
 let extractor = null;
 let extractorInit = null;
+let useModel = null;
+let useInit = null;
+
+async function initUSE() {
+  if (useInit) return useInit;
+  useInit = (async () => {
+    console.log('Initializing Universal Sentence Encoder (TFJS)...');
+    // Allow TFJS to use WebGL or WASM automatically; no special headers needed on GitHub Pages
+    useModel = await use.load();
+    console.log('✓ USE model ready');
+  })().catch(err => {
+    console.error('Failed to init USE:', err);
+    useInit = null;
+    useModel = null;
+    throw err;
+  });
+  return useInit;
+}
 
 function configureTransformersEnv() {
   try {
@@ -210,17 +230,27 @@ export async function generateEmbeddings(documents, onProgress) {
   
   // Use fallback if worker initialization failed
   if (useFallback || !workerReady) {
-    // Attempt main-thread transformers first
+    // Prefer USE on GitHub Pages (robust, browser-friendly)
     try {
-      await initExtractor();
-      console.log('Generating semantic embeddings on main thread...');
-      const output = await extractor(documents, { pooling: 'mean', normalize: true });
-      const embeddings = output.map(t => Array.from(t.data));
-      console.log(`✓ Generated ${embeddings.length} semantic embeddings (${embeddings[0].length} dimensions)`);
+      await initUSE();
+      console.log('Generating semantic embeddings with USE...');
+      const embeddingsTensor = await useModel.embed(documents);
+      const embeddings = await embeddingsTensor.array();
+      embeddingsTensor.dispose();
+      console.log(`✓ Generated ${embeddings.length} USE embeddings (${embeddings[0].length} dimensions)`);
       return embeddings;
     } catch (err) {
-      console.warn('Main-thread transformers failed, using TF-IDF:', err?.message || err);
-      return generateTFIDFEmbeddings(documents, onProgress);
+      console.warn('USE failed, trying Transformers on main thread:', err?.message || err);
+      try {
+        await initExtractor();
+        const output = await extractor(documents, { pooling: 'mean', normalize: true });
+        const embeddings = output.map(t => Array.from(t.data));
+        console.log(`✓ Generated ${embeddings.length} semantic embeddings (${embeddings[0].length} dimensions)`);
+        return embeddings;
+      } catch (err2) {
+        console.warn('Main-thread transformers failed, using TF-IDF:', err2?.message || err2);
+        return generateTFIDFEmbeddings(documents, onProgress);
+      }
     }
   }
   
