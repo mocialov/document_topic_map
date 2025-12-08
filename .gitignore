@@ -32,7 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Generated files
-*.html
-*.png
+titles_document.html
+titles_hierarchical.html
 
 uv.lock
