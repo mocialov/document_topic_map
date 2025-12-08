@@ -4,13 +4,9 @@
 
 import { env, pipeline } from '@xenova/transformers';
 
-// Let the library use its default configuration
-// This is the most reliable approach for browser environments
-
 let extractor = null;
 
 // Configure model loading to prefer CDN (more reliable in GitHub Pages)
-// Local models often fail to load properly in Web Workers due to path resolution issues
 env.allowRemoteModels = true;
 env.allowLocalModels = false;
 env.useBrowserCache = true;
@@ -19,10 +15,12 @@ env.useBrowserCache = true;
 env.remoteHost = 'https://huggingface.co';
 env.remotePathTemplate = '{model}/resolve/{revision}/';
 
-// Fix ONNX Runtime path issues in production builds
-// ONNX Runtime tries to load worker scripts, and the paths get doubled in production
-// We need to use the CDN version to avoid path resolution issues
-env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
+// CRITICAL: Disable ONNX multithreading to avoid importScripts path issues
+// The production build creates doubled paths (static/js/static/js/) when 
+// ONNX tries to load worker threads via importScripts()
+// Single-threaded ONNX avoids this by not needing to load additional workers
+env.backends.onnx.wasm.numThreads = 1;
+env.backends.onnx.wasm.proxy = false;
 
 // Handle messages from main thread
 self.onmessage = async (event) => {
