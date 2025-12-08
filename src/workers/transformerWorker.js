@@ -9,12 +9,15 @@ import { env, pipeline } from '@xenova/transformers';
 
 let extractor = null;
 
-// Prefer loading models locally to avoid CDN/CORS issues
-// Place model files under `public/models` (served at `/models`)
-// Force purely local to eliminate any remote 404/HTML responses
-env.allowLocalModels = true;
-env.localModelPath = '/models';
-env.allowRemoteModels = false;
+// Configure model loading to prefer CDN (more reliable in GitHub Pages)
+// Local models often fail to load properly in Web Workers due to path resolution issues
+env.allowRemoteModels = true;
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+// Set CDN to HuggingFace (default, most reliable)
+env.remoteHost = 'https://huggingface.co';
+env.remotePathTemplate = '{model}/resolve/{revision}/';
 
 // Handle messages from main thread
 self.onmessage = async (event) => {

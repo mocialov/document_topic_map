@@ -68,7 +68,7 @@ function FileUpload({ onFileLoad, isProcessing }) {
         
         const fetchUrl = config.proxy ? `${config.proxy}${encodeURIComponent(config.url)}` : config.url;
         const response = await fetch(fetchUrl, { 
-          signal: AbortSignal.timeout(8000) // 8 second timeout
+          signal: AbortSignal.timeout(15000) // 15 second timeout
         });
         
         if (!response.ok) {
