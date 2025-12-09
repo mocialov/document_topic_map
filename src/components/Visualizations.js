@@ -98,12 +98,17 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
     showlegend: true,
     legend: {
       font: {
-        size: 14
-      }
+        size: window.innerWidth < 768 ? 10 : 14
+      },
+      orientation: window.innerWidth < 768 ? 'h' : 'v',
+      y: window.innerWidth < 768 ? -0.2 : undefined,
+      x: window.innerWidth < 768 ? 0.5 : undefined,
+      xanchor: window.innerWidth < 768 ? 'center' : undefined
     },
-    height: 800,
+    height: window.innerWidth < 480 ? 400 : window.innerWidth < 768 ? 500 : 800,
     paper_bgcolor: 'white',
-    plot_bgcolor: '#ffffff'
+    plot_bgcolor: '#ffffff',
+    margin: window.innerWidth < 768 ? { l: 20, r: 20, t: 20, b: 100 } : { l: 80, r: 80, t: 100, b: 80 }
   };
   
   // Prepare topic keywords table
@@ -250,11 +255,17 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
         )}
       </div>
       
-      <div style={{ width: '90%', margin: '2rem auto' }}>
+      <div style={{ width: window.innerWidth < 768 ? '100%' : '90%', margin: window.innerWidth < 768 ? '1rem auto' : '2rem auto' }}>
         <Plot
           data={scatterData}
           layout={scatterLayout}
-          config={{ responsive: true }}
+          config={{ 
+            responsive: true,
+            displayModeBar: window.innerWidth >= 768,
+            scrollZoom: true,
+            modeBarButtonsToRemove: ['toImage'],
+            displaylogo: false
+          }}
           style={{ width: '100%' }}
         />
       </div>
