@@ -115,6 +115,14 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
     }))
     .sort((a, b) => b.count - a.count);
   
+  // Prepare outliers data separately
+  const outliersCount = clusters.filter(c => c === -1).length;
+  const outlierDocuments = clusters
+    .map((c, idx) => c === -1 ? documents[idx] : null)
+    .filter(doc => doc !== null);
+  
+  const hasOutliers = outliersCount > 0;
+  
   return (
     <>
       <div className="stats">
@@ -289,6 +297,41 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
                 )}
               </React.Fragment>
             ))}
+            {hasOutliers && (
+              <React.Fragment key="outliers">
+                <tr 
+                  onClick={() => toggleTopic('outliers')}
+                  style={{ cursor: 'pointer', backgroundColor: '#f9f9f9' }}
+                  className={expandedTopics.has('outliers') ? 'expanded' : ''}
+                >
+                  <td>
+                    <strong>
+                      <span style={{ marginRight: '8px' }}>
+                        {expandedTopics.has('outliers') ? '▼' : '▶'}
+                      </span>
+                      Outliers
+                    </strong>
+                  </td>
+                  <td>{outliersCount}</td>
+                  <td style={{ fontStyle: 'italic', color: '#666' }}>
+                    Documents that don't fit well into any topic
+                  </td>
+                </tr>
+                {expandedTopics.has('outliers') && (
+                  <tr className="documents-row">
+                    <td colSpan="3">
+                      <div className="documents-list">
+                        <ul>
+                          {outlierDocuments.map((doc, idx) => (
+                            <li key={idx}>{doc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            )}
           </tbody>
         </table>
       </div>
