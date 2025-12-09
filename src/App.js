@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import ProgressBar from './components/ProgressBar';
 import Visualizations from './components/Visualizations';
+import AboutModal from './components/AboutModal';
 import { generateEmbeddings } from './utils/embeddings';
 import { reduceWithUMAP } from './utils/dimensionReduction';
 import { clusterWithKMeans, clusterWithDBSCAN } from './utils/clustering';
@@ -15,6 +16,7 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [clusteringMethod, setClusteringMethod] = useState('dbscan');
+  const [showAbout, setShowAbout] = useState(false);
   
   const handleFileLoad = async (docs) => {
     if (docs.length === 0) {
@@ -241,7 +243,12 @@ function App() {
     <div className="App">
       <header className="app-header">
         <h1>Document Topic Map</h1>
+        <button className="about-button" onClick={() => setShowAbout(true)}>
+          ℹ️ About
+        </button>
       </header>
+      
+      <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
       
       <main className="app-main">
         {!documents && !results && (
