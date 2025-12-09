@@ -1,52 +1,57 @@
-// Semantic text embeddings using TensorFlow.js Universal Sentence Encoder
-// Uses WebGL backend which works reliably on GitHub Pages (no SharedArrayBuffer needed)
-// Falls back to TF-IDF if USE fails to load
+// Semantic text embeddings using HuggingFace Inference API
+// This works reliably on GitHub Pages without WASM/CORS issues
+// Falls back to TF-IDF if API is unavailable
 
-import * as tf from '@tensorflow/tfjs';
-import * as use from '@tensorflow-models/universal-sentence-encoder';
+// HuggingFace Inference API endpoint (free, no API key needed for public models)
+// Updated to new router endpoint (Dec 2025)
+const HF_API_URL = 'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2';
 
-let model = null;
-let modelLoading = null;
 let useFallback = false;
 
 /**
- * Initialize Universal Sentence Encoder with WebGL backend
- * WebGL works on GitHub Pages without special headers
+ * Call HuggingFace Inference API for embeddings
+ * Free tier, works on GitHub Pages without WASM issues
  */
-async function initUSE() {
-  if (model) return model;
-  if (modelLoading) return modelLoading;
-  if (useFallback) return null;
-  
-  modelLoading = (async () => {
-    try {
-      console.log('Initializing Universal Sentence Encoder (TensorFlow.js)...');
-      console.log('Using WebGL backend for GitHub Pages compatibility...');
+async function getHFEmbeddings(texts, onProgress) {
+  try {
+    console.log(`Calling HuggingFace API for ${texts.length} documents...`);
+    
+    const embeddings = [];
+    const batchSize = 32; // API can handle larger batches
+    
+    for (let i = 0; i < texts.length; i += batchSize) {
+      const batch = texts.slice(i, Math.min(i + batchSize, texts.length));
       
-      // Set backend to WebGL explicitly (avoids WASM issues)
-      await tf.setBackend('webgl');
-      await tf.ready();
+      const response = await fetch(HF_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: batch,
+          options: { wait_for_model: true }
+        })
+      });
       
-      console.log(`✓ TensorFlow.js backend: ${tf.getBackend()}`);
+      if (!response.ok) {
+        throw new Error(`HuggingFace API error: ${response.status} ${response.statusText}`);
+      }
       
-      // Load Universal Sentence Encoder
-      model = await use.load();
+      const batchEmbeddings = await response.json();
+      embeddings.push(...batchEmbeddings);
       
-      console.log('✓ Universal Sentence Encoder loaded successfully');
-      modelLoading = null;
-      return model;
-      
-    } catch (error) {
-      console.error('Failed to initialize USE:', error);
-      console.warn('⚠️ Falling back to TF-IDF embeddings...');
-      useFallback = true;
-      modelLoading = null;
-      model = null;
-      return null;
+      // Update progress
+      const progress = Math.min(i + batchSize, texts.length) / texts.length;
+      if (onProgress) onProgress(progress);
     }
-  })();
-  
-  return modelLoading;
+    
+    console.log(`✓ Generated ${embeddings.length} semantic embeddings from HuggingFace API`);
+    return embeddings;
+    
+  } catch (error) {
+    console.error('HuggingFace API failed:', error);
+    throw error;
+  }
 }
 
 // TF-IDF fallback implementation
@@ -112,7 +117,7 @@ function generateTFIDFEmbeddings(documents, onProgress) {
 
 /**
  * Main function to generate embeddings for documents
- * Tries Universal Sentence Encoder first, falls back to TF-IDF if needed
+ * Tries HuggingFace API first, falls back to TF-IDF if needed
  * 
  * @param {string[]} documents - Array of text documents
  * @param {function} onProgress - Progress callback (0 to 1)
@@ -124,44 +129,19 @@ export async function generateEmbeddings(documents, onProgress = null) {
   }
   
   try {
-    // Try Universal Sentence Encoder first
+    // Try HuggingFace API first
     if (!useFallback) {
       try {
-        const useModel = await initUSE();
-        
-        if (useModel) {
-          console.log(`Generating semantic embeddings for ${documents.length} documents...`);
-          
-          // Process in batches to show progress
-          const batchSize = 50;
-          const allEmbeddings = [];
-          
-          for (let i = 0; i < documents.length; i += batchSize) {
-            const batch = documents.slice(i, Math.min(i + batchSize, documents.length));
-            
-            // Generate embeddings
-            const embeddingsTensor = await useModel.embed(batch);
-            const batchEmbeddings = await embeddingsTensor.array();
-            embeddingsTensor.dispose(); // Clean up tensor
-            
-            allEmbeddings.push(...batchEmbeddings);
-            
-            // Update progress
-            const progress = Math.min(i + batchSize, documents.length) / documents.length;
-            if (onProgress) onProgress(progress);
-          }
-          
-          console.log(`✓ Generated ${allEmbeddings.length} USE embeddings (${allEmbeddings[0].length} dimensions)`);
-          return allEmbeddings;
-        }
+        const embeddings = await getHFEmbeddings(documents, onProgress);
+        return embeddings;
       } catch (error) {
-        console.error('USE embedding failed:', error);
-        console.warn('⚠️ Falling back to TF-IDF embeddings...');
+        console.error('HuggingFace API failed, falling back to TF-IDF:', error);
         useFallback = true;
       }
     }
     
     // Fall back to TF-IDF
+    console.log('Using TF-IDF embeddings (fallback mode)');
     const embeddings = generateTFIDFEmbeddings(documents, onProgress);
     if (onProgress) onProgress(1);
     return embeddings;
