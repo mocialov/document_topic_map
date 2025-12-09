@@ -22,65 +22,85 @@ function App() {
   const [clusteringMethod, setClusteringMethod] = useState('dbscan');
   const [showAbout, setShowAbout] = useState(false);
   
-  // Function to fetch and parse BBC RSS feed
+  // Function to fetch and parse BBC RSS feed with retry logic
   const fetchRSSFeed = async () => {
-    try {
-      console.log('Fetching BBC World News RSS feed...');
-      
-      const rssUrl = 'https://feeds.bbci.co.uk/news/world/rss.xml';
-      // Use /raw endpoint to get XML directly without JSON wrapper
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-      
-      // Create abort controller for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
-      const response = await fetch(proxyUrl, {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/xml, text/xml, */*'
+    const rssUrl = 'https://feeds.bbci.co.uk/news/world/rss.xml';
+    const maxRetries = 3;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Fetching BBC World News RSS feed (attempt ${attempt}/${maxRetries})...`);
+        
+        // Use JSON endpoint for more reliability
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+        
+        // Create abort controller for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout per attempt
+        
+        const response = await fetch(proxyUrl, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Check if the proxy returned the content
+        if (!data.contents) {
+          throw new Error('No contents in proxy response');
+        }
+        
+        const xmlText = data.contents;
+        
+        // Parse XML
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+        
+        // Check for parsing errors
+        const parserError = xmlDoc.querySelector('parsererror');
+        if (parserError) {
+          throw new Error('XML parsing error');
+        }
+        
+        // Extract titles from RSS items
+        const items = xmlDoc.querySelectorAll('item');
+        const allDocs = Array.from(items)
+          .map(item => {
+            const titleElement = item.querySelector('title');
+            return titleElement ? titleElement.textContent.trim() : '';
+          })
+          .filter(title => title.length > 0);
+        
+        if (allDocs.length > 0) {
+          console.log(`✓ Successfully loaded ${allDocs.length} BBC news headlines`);
+          handleFileLoad(allDocs);
+          return;
+        }
+        
+        throw new Error('No items found in RSS feed');
+        
+      } catch (error) {
+        console.error(`BBC RSS fetch attempt ${attempt} failed:`, error.message);
+        
+        // If this was the last attempt, load sample data
+        if (attempt === maxRetries) {
+          console.log(`All ${maxRetries} attempts failed, loading sample data instead`);
+          loadSampleData();
+        } else {
+          // Wait before retrying (exponential backoff: 1s, 2s)
+          const waitTime = attempt * 1000;
+          console.log(`Retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
       }
-      
-      const xmlText = await response.text();
-      
-      // Parse XML
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      
-      // Check for parsing errors
-      const parserError = xmlDoc.querySelector('parsererror');
-      if (parserError) {
-        throw new Error('XML parsing error');
-      }
-      
-      // Extract titles from RSS items
-      const items = xmlDoc.querySelectorAll('item');
-      const allDocs = Array.from(items)
-        .map(item => {
-          const titleElement = item.querySelector('title');
-          return titleElement ? titleElement.textContent.trim() : '';
-        })
-        .filter(title => title.length > 0);
-      
-      if (allDocs.length > 0) {
-        console.log(`✓ Successfully loaded ${allDocs.length} BBC news headlines`);
-        handleFileLoad(allDocs);
-        return;
-      }
-      
-      throw new Error('No items found in RSS feed');
-      
-    } catch (error) {
-      console.error('BBC RSS fetch error:', error);
-      console.log(`BBC RSS error: ${error.message}, loading sample data instead`);
-      loadSampleData();
     }
   };
   
