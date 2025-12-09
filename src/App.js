@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ProgressBar from './components/ProgressBar';
 import Visualizations from './components/Visualizations';
 import AboutModal from './components/AboutModal';
 import { generateEmbeddings } from './utils/embeddings';
@@ -9,7 +8,6 @@ import { extractTopicKeywords, generateTopicLabels } from './utils/topicExtracti
 import './App.css';
 
 function App() {
-  const [documents, setDocuments] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ stage: '', progress: 0 });
   const [results, setResults] = useState({
@@ -135,7 +133,6 @@ function App() {
       return;
     }
     
-    setDocuments(docs);
     setError(null);
     setIsProcessing(true);
     
@@ -241,7 +238,6 @@ function App() {
       return;
     }
     
-    setDocuments(docs);
     setError(null);
     setIsProcessing(true);
     // Keep results visible while reprocessing
