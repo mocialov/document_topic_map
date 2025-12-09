@@ -22,62 +22,64 @@ function App() {
   const [clusteringMethod, setClusteringMethod] = useState('dbscan');
   const [showAbout, setShowAbout] = useState(false);
   
-  // Function to fetch and parse NewsAPI
+  // Function to fetch and parse BBC RSS feed
   const fetchRSSFeed = async () => {
     try {
-      console.log('Fetching news from multiple categories...');
+      console.log('Fetching BBC World News RSS feed...');
       
-      const categories = ['business', 'entertainment', 'health', 'sport'];
-      const apiKey = '4bce6e623f3b4aa7864d1fa0e8841b1a';
+      const rssUrl = 'https://feeds.bbci.co.uk/news/world/rss.xml';
+      // Use /raw endpoint to get XML directly without JSON wrapper
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
       
-      // Fetch all categories in parallel
-      const fetchPromises = categories.map(category => 
-        fetch(`https://newsapi.org/v2/top-headlines?category=${category}&apiKey=${apiKey}`, {
-          signal: AbortSignal.timeout(15000)
-        })
-      );
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
-      const responses = await Promise.all(fetchPromises);
-      
-      // Check for errors
-      const failedResponse = responses.find(r => !r.ok);
-      if (failedResponse) {
-        throw new Error(`HTTP ${failedResponse.status}`);
-      }
-      
-      // Parse all JSON responses
-      const jsonDataArray = await Promise.all(responses.map(r => r.json()));
-      
-      // Combine all articles from all categories
-      const allDocs = [];
-      jsonDataArray.forEach((jsonData, index) => {
-        const articles = jsonData.articles || [];
-        const docs = articles
-          .map(article => {
-            let title = article.title || '';
-            // Remove publisher suffix (e.g., "Title - Publisher")
-            const dashIndex = title.lastIndexOf(' - ');
-            if (dashIndex > 0) {
-              title = title.substring(0, dashIndex);
-            }
-            return title;
-          })
-          .filter(doc => doc && doc.length > 0);
-        
-        allDocs.push(...docs);
-        console.log(`✓ Loaded ${docs.length} headlines from ${categories[index]}`);
+      const response = await fetch(proxyUrl, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/xml, text/xml, */*'
+        }
       });
       
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const xmlText = await response.text();
+      
+      // Parse XML
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        throw new Error('XML parsing error');
+      }
+      
+      // Extract titles from RSS items
+      const items = xmlDoc.querySelectorAll('item');
+      const allDocs = Array.from(items)
+        .map(item => {
+          const titleElement = item.querySelector('title');
+          return titleElement ? titleElement.textContent.trim() : '';
+        })
+        .filter(title => title.length > 0);
+      
       if (allDocs.length > 0) {
-        console.log(`✓ Successfully loaded ${allDocs.length} total news headlines`);
+        console.log(`✓ Successfully loaded ${allDocs.length} BBC news headlines`);
         handleFileLoad(allDocs);
         return;
       }
       
-      throw new Error('No items found in response');
+      throw new Error('No items found in RSS feed');
       
     } catch (error) {
-      console.log(`NewsAPI error: ${error.message}, loading sample data instead`);
+      console.error('BBC RSS fetch error:', error);
+      console.log(`BBC RSS error: ${error.message}, loading sample data instead`);
       loadSampleData();
     }
   };
