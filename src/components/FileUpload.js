@@ -43,84 +43,59 @@ function FileUpload({ onFileLoad, isProcessing }) {
     onFileLoad(sampleTitles);
   };
 
-  // Function to fetch and parse RSS feed with fallback to sample data
+  // Function to fetch and parse RSS feed
   const fetchRSSFeed = async () => {
     setIsLoadingDefault(true);
     
-    // Try multiple RSS feeds and CORS proxies
-    const feedConfigs = [
-      {
-        url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('http://feeds.bbci.co.uk/news/world/rss.xml'),
-        proxy: null,
-        name: 'BBC World News',
-        useGet: true
-      },
-      {
-        url: 'http://feeds.bbci.co.uk/news/technology/rss.xml',
-        proxy: 'https://api.codetabs.com/v1/proxy?quest=',
-        name: 'BBC Technology'
+    try {
+      console.log('Fetching BBC World News...');
+      
+      const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('http://feeds.bbci.co.uk/news/world/rss.xml');
+      const response = await fetch(url, { 
+        signal: AbortSignal.timeout(15000) // 15 second timeout
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-    ];
-    
-    for (const config of feedConfigs) {
-      try {
-        console.log(`Trying to fetch: ${config.name}...`);
-        
-        const fetchUrl = config.proxy ? `${config.proxy}${encodeURIComponent(config.url)}` : config.url;
-        const response = await fetch(fetchUrl, { 
-          signal: AbortSignal.timeout(15000) // 15 second timeout
-        });
-        
-        if (!response.ok) {
-          console.log(`${config.name} failed with HTTP ${response.status}`);
-          continue;
-        }
-        
-        let xmlText = await response.text();
-        
-        // Handle allorigins JSON response
-        if (config.useGet) {
-          try {
-            const jsonData = JSON.parse(xmlText);
-            xmlText = jsonData.contents;
-          } catch (e) {
-            // Not JSON, continue with xmlText as is
-          }
-        }
-        
-        // Parse XML
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        
-        // Check for parsing errors
-        const parserError = xmlDoc.querySelector('parsererror');
-        if (parserError) {
-          console.log(`${config.name} XML parsing error`);
-          continue;
-        }
-        
-        // Extract items from RSS feed
-        const items = xmlDoc.querySelectorAll('item');
-        const documents = Array.from(items).map(item => {
-          const title = item.querySelector('title')?.textContent || '';
-          return title.trim();
-        }).filter(doc => doc && doc.length > 0);
-        
-        if (documents.length > 0) {
-          console.log(`✓ Successfully loaded ${documents.length} items from ${config.name}`);
-          onFileLoad(documents);
-          setIsLoadingDefault(false);
-          return;
-        }
-      } catch (error) {
-        console.log(`${config.name} error: ${error.message}`);
+      
+      let xmlText = await response.text();
+      
+      // Handle allorigins JSON response
+      const jsonData = JSON.parse(xmlText);
+      xmlText = jsonData.contents;
+      
+      // Parse XML
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        throw new Error('XML parsing error');
       }
+      
+      // Extract items from RSS feed
+      const items = xmlDoc.querySelectorAll('item');
+      const documents = Array.from(items).map(item => {
+        const title = item.querySelector('title')?.textContent || '';
+        return title.trim();
+      }).filter(doc => doc && doc.length > 0);
+      
+      if (documents.length > 0) {
+        console.log(`✓ Successfully loaded ${documents.length} items from BBC World News`);
+        onFileLoad(documents);
+        setIsLoadingDefault(false);
+        return;
+      }
+      
+      throw new Error('No items found in feed');
+      
+    } catch (error) {
+      console.log(`RSS feed error: ${error.message}, loading sample data instead`);
+      loadSampleData();
+      setIsLoadingDefault(false);
     }
-    
-    // If all feeds failed, load sample data
-    console.log('RSS feeds unavailable, loading sample conference titles instead');
-    loadSampleData();
-    setIsLoadingDefault(false);
   };
 
   // Load RSS feed on component mount
@@ -148,7 +123,7 @@ function FileUpload({ onFileLoad, isProcessing }) {
   return (
     <div className="file-upload">
       <h2>Upload Conference Titles</h2>
-      <p>Default: Sample tech conference titles | Upload a text file with one title per line</p>
+      <p>Default: BBC World News headlines | Upload a text file with one title per line</p>
       
       <div className="upload-controls">
         <button 
@@ -156,7 +131,7 @@ function FileUpload({ onFileLoad, isProcessing }) {
           onClick={fetchRSSFeed}
           disabled={isProcessing || isLoadingDefault}
         >
-          {isLoadingDefault ? 'Loading...' : 'Reload Sample Data'}
+          {isLoadingDefault ? 'Loading...' : 'Reload BBC News'}
         </button>
         
         <button 
