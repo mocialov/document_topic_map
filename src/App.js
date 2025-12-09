@@ -305,8 +305,8 @@ function App() {
       <footer className="app-footer">
         <p>
           Powered by{' '}
-          <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener noreferrer">
-            Transformers.js
+          <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2" target="_blank" rel="noopener noreferrer">
+            HuggingFace Inference API
           </a>
           {' • '}
           <a href="https://github.com/PAIR-code/umap-js" target="_blank" rel="noopener noreferrer">
@@ -318,7 +318,7 @@ function App() {
           </a>
         </p>
         <p className="tech-note">
-          All processing happens in your browser - no data is sent to any server!
+          All processing happens in your browser - semantic embeddings via HuggingFace API!
         </p>
       </footer>
     </div>
