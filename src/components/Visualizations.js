@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import './Visualizations.css';
 
@@ -8,6 +8,11 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
   const [showRawData, setShowRawData] = useState(false);
   const [editedDocuments, setEditedDocuments] = useState(documents.join('\n'));
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Update editedDocuments when documents change
+  useEffect(() => {
+    setEditedDocuments(documents.join('\n'));
+  }, [documents]);
   
   const toggleTopic = (topicId) => {
     setExpandedTopics(prev => {
@@ -58,7 +63,7 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
         type: 'scatter',
         name: topicLabels[clusterId] || `Cluster ${clusterId}`,
         marker: {
-          size: 8,
+          size: 16,
           color: clusterId === -1 ? '#cccccc' : colors[clusterId % colors.length],
           opacity: 0.7
         },

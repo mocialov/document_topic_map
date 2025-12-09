@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import FileUpload from './components/FileUpload';
+import React, { useState, useEffect } from 'react';
 import ProgressBar from './components/ProgressBar';
 import Visualizations from './components/Visualizations';
 import AboutModal from './components/AboutModal';
@@ -13,10 +12,122 @@ function App() {
   const [documents, setDocuments] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ stage: '', progress: 0 });
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState({
+    documents: ['Loading news headlines...'],
+    embeddings: [],
+    coordinates: [[0, 0]],
+    clusters: [0],
+    topics: { 0: [] },
+    topicLabels: { 0: 'Loading...' }
+  });
   const [error, setError] = useState(null);
   const [clusteringMethod, setClusteringMethod] = useState('dbscan');
   const [showAbout, setShowAbout] = useState(false);
+  
+  // Function to fetch and parse NewsAPI
+  const fetchRSSFeed = async () => {
+    try {
+      console.log('Fetching news from multiple categories...');
+      
+      const categories = ['business', 'entertainment', 'health', 'sport'];
+      const apiKey = '4bce6e623f3b4aa7864d1fa0e8841b1a';
+      
+      // Fetch all categories in parallel
+      const fetchPromises = categories.map(category => 
+        fetch(`https://newsapi.org/v2/top-headlines?category=${category}&apiKey=${apiKey}`, {
+          signal: AbortSignal.timeout(15000)
+        })
+      );
+      
+      const responses = await Promise.all(fetchPromises);
+      
+      // Check for errors
+      const failedResponse = responses.find(r => !r.ok);
+      if (failedResponse) {
+        throw new Error(`HTTP ${failedResponse.status}`);
+      }
+      
+      // Parse all JSON responses
+      const jsonDataArray = await Promise.all(responses.map(r => r.json()));
+      
+      // Combine all articles from all categories
+      const allDocs = [];
+      jsonDataArray.forEach((jsonData, index) => {
+        const articles = jsonData.articles || [];
+        const docs = articles
+          .map(article => {
+            let title = article.title || '';
+            // Remove publisher suffix (e.g., "Title - Publisher")
+            const dashIndex = title.lastIndexOf(' - ');
+            if (dashIndex > 0) {
+              title = title.substring(0, dashIndex);
+            }
+            return title;
+          })
+          .filter(doc => doc && doc.length > 0);
+        
+        allDocs.push(...docs);
+        console.log(`✓ Loaded ${docs.length} headlines from ${categories[index]}`);
+      });
+      
+      if (allDocs.length > 0) {
+        console.log(`✓ Successfully loaded ${allDocs.length} total news headlines`);
+        handleFileLoad(allDocs);
+        return;
+      }
+      
+      throw new Error('No items found in response');
+      
+    } catch (error) {
+      console.log(`NewsAPI error: ${error.message}, loading sample data instead`);
+      loadSampleData();
+    }
+  };
+  
+  // Sample data as fallback
+  const loadSampleData = () => {
+    const sampleTitles = [
+      "Advances in Machine Learning for Natural Language Processing",
+      "Quantum Computing Applications in Cryptography",
+      "Sustainable Energy Solutions and Climate Change",
+      "CRISPR Gene Editing: Medical Breakthroughs and Ethical Considerations",
+      "Blockchain Technology Beyond Cryptocurrency",
+      "Artificial Intelligence in Healthcare Diagnostics",
+      "5G Networks and Internet of Things Integration",
+      "Autonomous Vehicles: Safety and Regulation Challenges",
+      "Augmented Reality in Education and Training",
+      "Cybersecurity Threats in Cloud Computing",
+      "Deep Learning for Computer Vision Applications",
+      "Renewable Energy Storage Technologies",
+      "Neuromorphic Computing and Brain-Inspired AI",
+      "Personalized Medicine Through Genomic Analysis",
+      "Smart Cities and Urban Planning Technologies",
+      "Virtual Reality Therapy for Mental Health",
+      "Edge Computing and Real-Time Data Processing",
+      "Biometric Authentication Systems and Privacy",
+      "Nanotechnology in Drug Delivery Systems",
+      "Explainable AI and Algorithmic Transparency",
+      "Robotic Process Automation in Business",
+      "Carbon Capture and Storage Technologies",
+      "Federated Learning for Privacy-Preserving AI",
+      "Precision Agriculture Using Satellite Imagery",
+      "Brain-Computer Interfaces for Assistive Technology",
+      "Synthetic Biology and Bioengineering",
+      "Digital Twins in Manufacturing",
+      "Natural Language Generation and Content Creation",
+      "Microservices Architecture in Cloud Applications",
+      "Biodegradable Plastics and Environmental Impact"
+    ];
+    
+    console.log(`✓ Loaded ${sampleTitles.length} sample conference titles`);
+    handleFileLoad(sampleTitles);
+  };
+  
+  // Load RSS feed on component mount
+  useEffect(() => {
+    fetchRSSFeed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const handleFileLoad = async (docs) => {
     if (docs.length === 0) {
@@ -27,7 +138,6 @@ function App() {
     setDocuments(docs);
     setError(null);
     setIsProcessing(true);
-    setResults(null);
     
     try {
       // Step 1: Generate embeddings
@@ -123,13 +233,6 @@ function App() {
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const handleReset = () => {
-    setDocuments(null);
-    setResults(null);
-    setError(null);
-    setProgress({ stage: '', progress: 0 });
   };
 
   const handleReprocess = async (docs) => {
@@ -251,62 +354,24 @@ function App() {
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
       
       <main className="app-main">
-        {!documents && !results && (
-          <>
-            <div className="config-panel">
-              <h3>Clustering Method</h3>
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    value="kmeans"
-                    checked={clusteringMethod === 'kmeans'}
-                    onChange={(e) => setClusteringMethod(e.target.value)}
-                    disabled={isProcessing}
-                  />
-                  <span>K-Means (Faster, Fixed Number of Clusters)</span>
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    value="dbscan"
-                    checked={clusteringMethod === 'dbscan'}
-                    onChange={(e) => setClusteringMethod(e.target.value)}
-                    disabled={isProcessing}
-                  />
-                  <span>DBSCAN (Density-Based, Auto-Detect Clusters)</span>
-                </label>
-              </div>
-            </div>
-            
-            <FileUpload onFileLoad={handleFileLoad} isProcessing={isProcessing} />
-          </>
-        )}
-        
-        {isProcessing && !results && (
-          <ProgressBar stage={progress.stage} progress={progress.progress} />
-        )}
-        
         {error && (
           <div className="error-panel">
             <h3>❌ Error</h3>
             <p>{error}</p>
-            <button onClick={handleReset} className="button">
-              Try Again
+            <button onClick={fetchRSSFeed} className="button">
+              Reload News
             </button>
           </div>
         )}
         
-        {results && (
-          <Visualizations 
-            results={results} 
-            onReprocess={handleReprocess} 
-            isProcessing={isProcessing}
-            progress={progress}
-            clusteringMethod={clusteringMethod}
-            setClusteringMethod={setClusteringMethod}
-          />
-        )}
+        <Visualizations 
+          results={results} 
+          onReprocess={handleReprocess} 
+          isProcessing={isProcessing}
+          progress={progress}
+          clusteringMethod={clusteringMethod}
+          setClusteringMethod={setClusteringMethod}
+        />
       </main>
       
       <footer className="app-footer">

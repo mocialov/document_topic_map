@@ -118,6 +118,25 @@
   text-align: center;
 }
 
+.loading-message {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.loading-message h2 {
+  color: #3498db;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.loading-message p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
 .error-panel h3 {
   color: #856404;
   margin-top: 0;
