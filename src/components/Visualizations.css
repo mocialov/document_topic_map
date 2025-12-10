@@ -92,12 +92,12 @@
 }
 
 .stat-label {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #666;
 }
 
 .stat-value {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #0066cc;
 }

@@ -14,7 +14,7 @@
 
 .about-button {
   position: absolute;
-  right: 1rem;
+  right: 5%;
   top: 1rem;
   background: #3498db;
   color: white;
@@ -33,13 +33,10 @@
 
 .about-button:hover {
   background: #2980b9;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transform: translateY(-50%) translateY(-1px);
 }
 
 .about-button:active {
-  transform: translateY(-50%) translateY(0);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: #2472a4;
 }
 
 .header-button {

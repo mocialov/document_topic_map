@@ -80,7 +80,7 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
       title: '', 
       showgrid: false,
       range: xRange,
-      fixedrange: false,
+      fixedrange: true,
       showticklabels: false,
       showline: false,
       zeroline: false
@@ -89,7 +89,7 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
       title: '', 
       showgrid: false,
       range: yRange,
-      fixedrange: false,
+      fixedrange: true,
       showticklabels: false,
       showline: false,
       zeroline: false
@@ -255,15 +255,14 @@ function Visualizations({ results, onReprocess, isProcessing, progress, clusteri
         )}
       </div>
       
-      <div style={{ width: window.innerWidth < 768 ? '100%' : '90%', margin: window.innerWidth < 768 ? '1rem auto' : '2rem auto' }}>
+      <div style={{ width: window.innerWidth < 768 ? '100%' : '90%', margin: '0 auto' }}>
         <Plot
           data={scatterData}
           layout={scatterLayout}
           config={{ 
             responsive: true,
-            displayModeBar: window.innerWidth >= 768,
-            scrollZoom: true,
-            modeBarButtonsToRemove: ['toImage'],
+            displayModeBar: false,
+            scrollZoom: false,
             displaylogo: false
           }}
           style={{ width: '100%' }}
